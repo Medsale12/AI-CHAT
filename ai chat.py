@@ -9,7 +9,7 @@ def load_lottie_file(filepath: str):
         return json.load(f)
 
 # تهيئة عميل OpenAI
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="sk-mnopqrstijkl5678mnopqrstijkl5678mnopqrst")
 # عرض الأنيميشن
 lottie_animation = load_lottie_file("animation.json")
 st_lottie(lottie_animation, speed=1, height=300, key="chatbot")
