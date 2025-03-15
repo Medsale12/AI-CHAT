@@ -1,21 +1,14 @@
-from openai import OpenAI
+import torch
+from transformers import GPTJForCausalLM, AutoTokenizer
 import streamlit as st
-from streamlit_lottie import st_lottie
-import json
 
-# تحميل ملف Lottie
-def load_lottie_file(filepath: str):
-    with open(filepath, "r") as f:
-        return json.load(f)
-
-# تهيئة عميل OpenAI
-client = OpenAI(api_key="sk-mnopqrstijkl5678mnopqrstijkl5678mnopqrst")
-# عرض الأنيميشن
-lottie_animation = load_lottie_file("animation.json")
-st_lottie(lottie_animation, speed=1, height=300, key="chatbot")
+# تحميل النموذج (GPT-J 6B)
+model_name = "EleutherAI/gpt-j-6B"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = GPTJForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16).to("cuda")
 
 # عنوان التطبيق
-st.title("🤖 AI Chatbot - Powered by HB LORD")
+st.title("🤖 AI Chatbot - Powered by GPT-J")
 
 # واجهة الدردشة
 if "messages" not in st.session_state:
@@ -33,13 +26,11 @@ if prompt := st.chat_input("اكتب رسالتك هنا..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # إرسال رسالة المستخدم إلى OpenAI والحصول على الرد
+    # إرسال رسالة المستخدم إلى النموذج والحصول على الرد
     with st.chat_message("assistant"):
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
-        )
-        reply = response.choices[0].message.content
+        inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+        outputs = model.generate(**inputs, max_length=100, temperature=0.7)
+        reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
         st.markdown(reply)
 
     # إضافة رد البوت إلى المحادثة
