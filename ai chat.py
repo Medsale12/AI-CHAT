@@ -1,14 +1,8 @@
-import torch
-from transformers import GPTJForCausalLM, AutoTokenizer
+import requests
 import streamlit as st
 
-# تحميل النموذج (GPT-J 6B)
-model_name = "EleutherAI/gpt-j-6B"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = GPTJForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16).to("cuda")
-
 # عنوان التطبيق
-st.title("🤖 AI Chatbot - Powered by GPT-J")
+st.title("🤖 AI Chatbot - Powered by Hugging Face")
 
 # واجهة الدردشة
 if "messages" not in st.session_state:
@@ -26,11 +20,16 @@ if prompt := st.chat_input("اكتب رسالتك هنا..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # إرسال رسالة المستخدم إلى النموذج والحصول على الرد
+    # إرسال رسالة المستخدم إلى Hugging Face API
+    API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+    headers = {"Authorization": "Bearer your_hugging_face_api_key_here"}
+    payload = {"inputs": prompt}
+
+    response = requests.post(API_URL, headers=headers, json=payload)
+    reply = response.json()[0]["generated_text"]
+
+    # عرض رد البوت
     with st.chat_message("assistant"):
-        inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
-        outputs = model.generate(**inputs, max_length=100, temperature=0.7)
-        reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
         st.markdown(reply)
 
     # إضافة رد البوت إلى المحادثة
