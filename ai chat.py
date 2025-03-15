@@ -10,8 +10,8 @@ def تهيئة_التطبيق():
 
 # تحميل النموذج والـ Tokenizer
 def تحميل_النموذج():
-    النموذج = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-small")
-    الـtokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
+    النموذج = AutoModelForCausalLM.from_pretrained("facebook/blenderbot-400M-distill")
+    الـtokenizer = AutoTokenizer.from_pretrained("facebook/blenderbot-400M-distill")
     return النموذج, الـtokenizer
 
 # إنشاء واجهة المستخدم
