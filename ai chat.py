@@ -15,7 +15,7 @@ lottie_animation = load_lottie_file("animation.json")
 st_lottie(lottie_animation, speed=1, height=300, key="chatbot")
 
 # عنوان التطبيق
-st.title("🤖 AI Chatbot - Powered by Mohamed Salem El Batal")
+st.title("🤖 AI Chatbot - Powered by HB LORD")
 
 # واجهة الدردشة
 if "messages" not in st.session_state:
