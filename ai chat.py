@@ -10,8 +10,8 @@ def تهيئة_التطبيق():
 
 # تحميل النموذج والـ Tokenizer
 def تحميل_النموذج():
-    النموذج = AutoModelForCausalLM.from_pretrained("facebook/blenderbot-400M-distill")
-    الـtokenizer = AutoTokenizer.from_pretrained("facebook/blenderbot-400M-distill")
+    النموذج = AutoModelForCausalLM.from_pretrained("facebook/blenderbot-3B")
+    الـtokenizer = AutoTokenizer.from_pretrained("facebook/blenderbot-3B")
     return النموذج, الـtokenizer
 
 # إنشاء واجهة المستخدم
