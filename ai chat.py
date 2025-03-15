@@ -1,36 +1,50 @@
-import requests
 import streamlit as st
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
-# عنوان التطبيق
-st.title("🤖 AI Chatbot - Powered by Hugging Face")
+# تهيئة التطبيق
+def تهيئة_التطبيق():
+    st.set_page_config(page_title="دردشة فريدة", page_icon="💬")
+    st.title("دردشة ذكية مع Hugging Face")
+    st.write("مرحبًا! أنا هنا لأجيب على أسئلتك.")
 
-# واجهة الدردشة
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# تحميل النموذج والـ Tokenizer
+def تحميل_النموذج():
+    النموذج = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-small")
+    الـtokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
+    return النموذج, الـtokenizer
 
-# عرض محادثات سابقة
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# إنشاء واجهة المستخدم
+def إنشاء_واجهة_المستخدم(النموذج, الـtokenizer):
+    if "المحادثات" not in st.session_state:
+        st.session_state.المحادثات = []
 
-# استقبال مدخلات المستخدم
-if prompt := st.chat_input("اكتب رسالتك هنا..."):
-    # إضافة رسالة المستخدم إلى المحادثة
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    with st.form("دردشة"):
+        المدخلات = st.text_area("اكتب رسالتك هنا:")
+        if st.form_submit_button("إرسال"):
+            if المدخلات.strip() != "":
+                with st.spinner("جارٍ التفكير..."):
+                    # تحضير المدخلات للنموذج
+                    مدخلات_مشفرة = الـtokenizer.encode(المدخلات + الـtokenizer.eos_token, return_tensors="pt")
+                    ناتج_مشفر = النموذج.generate(مدخلات_مشفرة, max_length=1000, pad_token_id=الـtokenizer.eos_token_id)
+                    الرد = الـtokenizer.decode(ناتج_مشفر[:, مدخلات_مشفرة.shape[-1]:][0], skip_special_tokens=True)
 
-    # إرسال رسالة المستخدم إلى Hugging Face API
-    API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
-    headers = {"Authorization": "Bearer your_hugging_face_api_key_here"}
-    payload = {"inputs": prompt}
+                    # حفظ المحادثة
+                    st.session_state.المحادثات.append(("أنت", المدخلات))
+                    st.session_state.المحادثات.append(("الذكاء الاصطناعي", الرد))
 
-    response = requests.post(API_URL, headers=headers, json=payload)
-    reply = response.json()[0]["generated_text"]
+    # عرض المحادثات
+    for المرسل, الرسالة in st.session_state.المحادثات:
+        if المرسل == "أنت":
+            st.markdown(f"**أنت:** {الرسالة}")
+        else:
+            st.markdown(f"**الذكاء الاصطناعي:** {الرسالة}")
 
-    # عرض رد البوت
-    with st.chat_message("assistant"):
-        st.markdown(reply)
+# تشغيل التطبيق
+def تشغيل_التطبيق():
+    تهيئة_التطبيق()
+    النموذج, الـtokenizer = تحميل_النموذج()
+    إنشاء_واجهة_المستخدم(النموذج, الـtokenizer)
 
-    # إضافة رد البوت إلى المحادثة
-    st.session_state.messages.append({"role": "assistant", "content": reply})
+if __name__ == "__main__":
+    تشغيل_التطبيق()
